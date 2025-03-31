@@ -13,9 +13,9 @@ function dataMigrationRouter(model, dataPath) {
     try {
       const fileContent = await readFile(dataPath, "utf8");
       const data = JSON.parse(fileContent);
-
+      
       await model.bulkWrite(
-        data.default.map((item) => {
+        data.map((item) => {
           if (item._id) {
             return {
               updateOne: {
