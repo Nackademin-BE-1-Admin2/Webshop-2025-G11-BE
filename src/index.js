@@ -30,6 +30,10 @@ app.get('/api', (req, res) => {
         "POST /api/products": "Create a new product (Admin only)",
         "PUT /api/products/:id": "Update a product (Admin only)",
         "DELETE /api/products/:id": "Delete a product (Admin only)"
+      },
+      dataMigration: {
+        "POST /api/data-migration/products/migrate": "Migrate products from JSON file to MongoDB",
+        "POST /api/data-migration/products/teardown": "Teardown all products from MongoDB"
       }
     },
     authentication: "Use Bearer token in Authorization header for protected routes"
@@ -39,6 +43,23 @@ app.get('/api', (req, res) => {
 // Routes
 app.use('/api/auth', authRoutes);
 app.use('/api/products', productRoutes);
+
+import dataMigrationRouterModule from "./migration/data.migration.route_module.js";
+import Product from "./models/Product.js";
+import { fileURLToPath } from 'url';
+import { dirname, join } from 'path';
+
+// Skapa dirname manuellt för ES-moduler
+const _filename = fileURLToPath(import.meta.url);
+const _dirname = dirname(_filename);
+
+// Rätt dataPath
+const dataPath = join(_dirname, "data", "products.json");
+console.log("Datapath", dataPath)
+app.use(
+  "/api/data-migration/products",
+  dataMigrationRouterModule(Product, dataPath)
+);
 
 // Connect to MongoDB
 mongoose.connect(process.env.MONGODB_URI || 'mongodb://localhost:27017/hakim-livs')
